@@ -34,11 +34,11 @@ def main():
         print("❌ Nenhuma imagem encontrada")
         return
 
-    # Informações iniciais
+    # Informações iniciais - conta do JSON
     terminal.clear()
     terminal.print_header(
         total_images=len(image_paths),
-        already_annotated=len(manager.annotations),
+        already_annotated=manager.get_annotation_count(),
         start_from=0,
         class_names=loader.class_names
     )
@@ -48,7 +48,7 @@ def main():
 
     try:
         # Loop principal de anotação
-        annotation_history = []  # Lista de (idx, img_info, box_idx, box)
+        annotation_history = []
 
         idx = 0
         while idx < len(image_paths):
@@ -75,7 +75,7 @@ def main():
 
             # Processa cada box
             box_idx = 0
-            went_back = False  # Flag para saber se voltou
+            went_back = False
 
             while box_idx < len(boxes):
                 box = boxes[box_idx]
@@ -122,9 +122,11 @@ def main():
                     date_input = input("📅 Data de validade: ").strip()
 
                     if date_input.lower() == 'quit':
+                        print("\n💾 Salvando e reconstruindo sumário...")
                         manager.save()
                         display.stop()
-                        manager.export_summary()
+                        # Reconstrói sumário do zero baseado no JSON
+                        manager.export_summary(force_rebuild=True)
                         return
 
                     if date_input.lower() == 'back':
@@ -186,11 +188,10 @@ def main():
                     else:
                         print("❌ Digite uma data ou comando válido")
 
-                # Se deu back, sai do loop de boxes e recarrega a imagem
+                # Se deu back, sai do loop de boxes
                 if went_back:
                     break
 
-            # Se deu back, não avança idx (recarrega mesma imagem)
             # Se não deu back, avança para próxima imagem
             if not went_back:
                 idx += 1
@@ -198,7 +199,9 @@ def main():
     finally:
         display.stop()
         manager.save()
-        print(f"\n🎉 Concluído! Total: {len(manager.annotations)} anotações")
+        # Reconstrói sumário do zero ao finalizar
+        print("\n📊 Reconstruindo sumário final...")
+        manager.export_summary(force_rebuild=True)
 
 
 if __name__ == "__main__":
