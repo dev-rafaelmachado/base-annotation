@@ -1,0 +1,14 @@
+RESUMO DAS ANOTAÇÕES DE DATAS
+==================================================
+Total de bboxes anotadas: 8
+Com data legível: 8
+Ilegíveis: 0
+
+Por subset:
+  - train: 8
+
+Por classe:
+  - exp_date: 8
+
+Arquivo JSON: annotations_output\expiry_dates_all.json
+Crops salvos em: annotations_output\crops
