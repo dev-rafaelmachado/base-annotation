@@ -17,7 +17,7 @@ class AnnotationManager:
         self._load_existing()
 
     def _load_existing(self):
-        """Carrega anotações existentes"""
+        """Carrega anotações existentes do JSON"""
         if self.paths.annotations_file.exists():
             with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -121,8 +121,21 @@ class AnnotationManager:
 
         print(f"\n✓ Anotações salvas: {self.paths.annotations_file}")
 
-    def export_summary(self):
-        """Exporta resumo estatístico"""
+    def get_annotation_count(self) -> int:
+        """Retorna contagem de anotações do JSON"""
+        return len(self.annotations)
+
+    def export_summary(self, force_rebuild: bool = False):
+        """
+        Exporta resumo estatístico
+
+        Args:
+            force_rebuild: Se True, reconstrói sumário do zero baseado no JSON
+        """
+        if force_rebuild:
+            # Recarrega anotações do JSON para garantir dados atualizados
+            self._load_existing()
+
         summary_file = self.paths.output_path / "summary.txt"
 
         total = len(self.annotations)
@@ -160,4 +173,6 @@ class AnnotationManager:
             f.write(f"\nArquivo JSON: {self.paths.annotations_file}\n")
             f.write(f"Crops salvos em: {self.paths.crops_path}\n")
 
-        print(f"\n📊 Resumo: {summary_file}")
+        print(f"\n📊 Resumo reconstruído: {summary_file}")
+        print(
+            f"📈 Total: {total} | Legíveis: {annotated} | Ilegíveis: {illegible}")
