@@ -75,6 +75,8 @@ def main():
 
             # Processa cada box
             box_idx = 0
+            went_back = False  # Flag para saber se voltou
+
             while box_idx < len(boxes):
                 box = boxes[box_idx]
                 crop_id = f"{subset}_{image_path.stem}_box{box_idx}"
@@ -137,9 +139,8 @@ def main():
                             # Volta para a imagem/box anterior
                             idx = prev_idx
                             box_idx = prev_box_idx
+                            went_back = True
                             should_continue = False
-
-                            # Força reprocessar aquela anotação
                             break
                         else:
                             print("⚠️  Não há anotações anteriores para voltar")
@@ -185,12 +186,13 @@ def main():
                     else:
                         print("❌ Digite uma data ou comando válido")
 
-                # Se deu back, não avança o box_idx
-                if date_input.lower() == 'back' and annotation_history:
+                # Se deu back, sai do loop de boxes e recarrega a imagem
+                if went_back:
                     break
 
-            # Só avança para próxima imagem se não deu back
-            if not (date_input.lower() == 'back' and annotation_history):
+            # Se deu back, não avança idx (recarrega mesma imagem)
+            # Se não deu back, avança para próxima imagem
+            if not went_back:
                 idx += 1
 
     finally:
