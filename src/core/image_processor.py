@@ -152,16 +152,20 @@ class ImageProcessor:
         auto_zoom = min(zoom_w, zoom_h)
         auto_zoom = max(1.0, min(5.0, auto_zoom))
 
-        # Calcula pan
-        zoomed_w = display_w * auto_zoom
-        zoomed_h = display_h * auto_zoom
+        # Calcula pan para CENTRALIZAR a região
+        # Após aplicar zoom, a posição do centro da região muda
         zoomed_center_x = scaled_center_x * auto_zoom
         zoomed_center_y = scaled_center_y * auto_zoom
 
-        auto_pan_x = int(zoomed_center_x - display_w / 2)
-        auto_pan_y = int(zoomed_center_y - display_h / 2)
+        # Pan necessário para colocar o centro da região no centro da tela
+        auto_pan_x = int(zoomed_center_x - (display_w / 2))
+        auto_pan_y = int(zoomed_center_y - (display_h / 2))
 
-        auto_pan_x = max(0, min(auto_pan_x, int(zoomed_w - display_w)))
-        auto_pan_y = max(0, min(auto_pan_y, int(zoomed_h - display_h)))
+        # Garante que pan está dentro dos limites
+        zoomed_w = int(display_w * auto_zoom)
+        zoomed_h = int(display_h * auto_zoom)
+
+        auto_pan_x = max(0, min(auto_pan_x, max(0, zoomed_w - display_w)))
+        auto_pan_y = max(0, min(auto_pan_y, max(0, zoomed_h - display_h)))
 
         return auto_zoom, auto_pan_x, auto_pan_y

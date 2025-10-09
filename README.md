@@ -29,7 +29,9 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 ### Controles Estilo Gamer
 - ✅ **Q/E** - Zoom in/out (ajuste fino após zoom automático)
 - ✅ **WASD** - Movimento da câmera (W=cima, S=baixo, A=esquerda, D=direita)
-- ✅ **R** - Reseta para zoom automático
+- ✅ **R** - Reseta zoom, pan, brilho e contraste
+- ✅ **B/V** - Aumentar/diminuir brilho
+- ✅ **C/X** - Aumentar/diminuir contraste
 
 ### Suporte a Polígonos
 - ✅ Detecta automaticamente polígonos e bboxes
@@ -44,11 +46,29 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 4. **Digite a data** - No terminal
 5. **Próxima imagem** - Novo zoom automático
 
+## Controles Durante Anotação
+
+### Navegação na Imagem
+| Tecla/Ação | Função |
+|------------|--------|
+| `Q` | Aumentar zoom (Zoom In) |
+| `E` | Diminuir zoom (Zoom Out) |
+| `R` | Resetar zoom, posição, brilho e contraste |
+| `W` | Mover para cima |
+| `S` | Mover para baixo |
+| `A` | Mover para esquerda |
+| `D` | Mover para direita |
+| `B` | Aumentar brilho |
+| `V` | Diminuir brilho |
+| `C` | Aumentar contraste |
+| `X` | Diminuir contraste |
+
 ## Dicas
 
 ✅ **Zoom automático** - A região já aparece ampliada e centralizada  
 ✅ **Ajuste fino** - Use Q/E e WASD se precisar ver mais detalhes  
-✅ **R para resetar** - Volta ao zoom automático calculado  
+✅ **Ajuste de imagem** - Use B/V e C/X para melhorar visibilidade  
+✅ **R para resetar** - Volta ao zoom automático e configurações padrão  
 ✅ **Mais rápido** - Não precisa dar zoom manualmente em cada imagem  
 ✅ **Foco no que importa** - A data já está em destaque  
 

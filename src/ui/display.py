@@ -20,6 +20,10 @@ class DisplayManager:
         self.pan_x = 0
         self.pan_y = 0
 
+        # Controles de brilho e contraste
+        self.brightness = display_config.default_brightness
+        self.contrast = display_config.default_contrast
+
         self.current_image: Optional[np.ndarray] = None
         self.should_update = False
         self.stop_flag = False
@@ -50,6 +54,9 @@ class DisplayManager:
         self.zoom_level = zoom
         self.pan_x = pan_x
         self.pan_y = pan_y
+        # Reseta brilho e contraste ao mudar de imagem
+        self.brightness = self.display_config.default_brightness
+        self.contrast = self.display_config.default_contrast
         self.should_update = True
 
     def get_display_size(self, img_width: int, img_height: int) -> Tuple[int, int]:
@@ -94,6 +101,9 @@ class DisplayManager:
             interpolation=cv2.INTER_CUBIC if display_w > w else cv2.INTER_AREA
         )
 
+        # Aplica brilho e contraste
+        base_image = self._apply_brightness_contrast(base_image)
+
         # Aplica zoom e pan
         display_image = self._apply_zoom_pan(base_image)
 
@@ -132,20 +142,32 @@ class DisplayManager:
 
         return visible
 
+    def _apply_brightness_contrast(self, image: np.ndarray) -> np.ndarray:
+        """Aplica ajustes de brilho e contraste"""
+        if self.brightness == 0 and self.contrast == 1.0:
+            return image
+
+        # Aplica transformação: output = contrast * input + brightness
+        adjusted = cv2.convertScaleAbs(
+            image, alpha=self.contrast, beta=self.brightness)
+        return adjusted
+
     def _draw_instructions(self, image: np.ndarray):
         """Desenha instruções na imagem"""
         instructions = [
-            "ZOOM: [ Q ] aumentar | [ E ] diminuir | [ R ] resetar",
-            "MOVER: [ W ] cima | [ S ] baixo | [ A ] esq | [ D ] dir",
+            "ZOOM: [ Q ] + | [ E ] - | [ R ] reset",
+            "MOVE: [ W ] [ S ] [ A ] [ D ]",
+            f"BRILHO: [ B ] + | [ V ] - | Atual: {self.brightness:+.0f}",
+            f"CONTRASTE: [ C ] + | [ X ] - | Atual: {self.contrast:.2f}",
             f"Zoom: {self.zoom_level:.1f}x"
         ]
 
         h = image.shape[0]
         for i, text in enumerate(instructions):
-            y_pos = h - 60 + i * 20
+            y_pos = h - 100 + i * 20
             cv2.putText(
                 image, text, (10, y_pos),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1, cv2.LINE_AA
             )
 
     def _handle_key(self, key: int):
@@ -165,6 +187,8 @@ class DisplayManager:
             self.zoom_level = 1.0
             self.pan_x = 0
             self.pan_y = 0
+            self.brightness = self.display_config.default_brightness
+            self.contrast = self.display_config.default_contrast
             changed = True
 
         # Pan
@@ -179,6 +203,26 @@ class DisplayManager:
             changed = True
         elif key in [ord('d'), ord('D')]:
             self.pan_x += self.zoom_config.pan_step
+            changed = True
+
+        # Brilho
+        elif key in [ord('b'), ord('B')]:
+            self.brightness = min(
+                self.brightness + self.display_config.brightness_step, 100)
+            changed = True
+        elif key in [ord('v'), ord('V')]:
+            self.brightness = max(
+                self.brightness - self.display_config.brightness_step, -100)
+            changed = True
+
+        # Contraste
+        elif key in [ord('c'), ord('C')]:
+            self.contrast = min(
+                self.contrast + self.display_config.contrast_step, 3.0)
+            changed = True
+        elif key in [ord('x'), ord('X')]:
+            self.contrast = max(
+                self.contrast - self.display_config.contrast_step, 0.1)
             changed = True
 
         if changed:

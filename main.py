@@ -48,9 +48,11 @@ def main():
 
     try:
         # Loop principal de anotação
-        annotation_history = []
+        annotation_history = []  # Lista de (idx, img_info, box_idx, box)
 
-        for idx, img_info in enumerate(image_paths):
+        idx = 0
+        while idx < len(image_paths):
+            img_info = image_paths[idx]
             image_path = img_info['path']
             subset = img_info['subset']
             label_path = img_info['label_path']
@@ -60,6 +62,7 @@ def main():
             image = cv2.imread(str(image_path))
             if image is None:
                 print(f"⚠️  Erro ao carregar: {image_path.name}")
+                idx += 1
                 continue
 
             img_height, img_width = image.shape[:2]
@@ -67,13 +70,17 @@ def main():
             # Lê anotações
             boxes = loader.read_yolo_label(label_path)
             if not boxes:
+                idx += 1
                 continue
 
             # Processa cada box
-            for box_idx, box in enumerate(boxes):
+            box_idx = 0
+            while box_idx < len(boxes):
+                box = boxes[box_idx]
                 crop_id = f"{subset}_{image_path.stem}_box{box_idx}"
 
                 if manager.is_annotated(crop_id):
+                    box_idx += 1
                     continue
 
                 # Prepara visualização
@@ -108,7 +115,8 @@ def main():
                 )
 
                 # Loop de entrada
-                while True:
+                should_continue = True
+                while should_continue:
                     date_input = input("📅 Data de validade: ").strip()
 
                     if date_input.lower() == 'quit':
@@ -117,14 +125,30 @@ def main():
                         manager.export_summary()
                         return
 
-                    if date_input.lower() == 'back' and annotation_history:
-                        last_id = annotation_history.pop()
-                        manager.remove_annotation(last_id)
-                        print(f"↩️  Removida: {last_id}")
-                        break
+                    if date_input.lower() == 'back':
+                        if annotation_history:
+                            # Remove a última anotação
+                            prev_idx, prev_img_info, prev_box_idx, prev_box = annotation_history.pop()
+                            prev_crop_id = f"{prev_img_info['subset']}_{prev_img_info['path'].stem}_box{prev_box_idx}"
+
+                            manager.remove_annotation(prev_crop_id)
+                            print(f"↩️  Voltando para: {prev_crop_id}")
+
+                            # Volta para a imagem/box anterior
+                            idx = prev_idx
+                            box_idx = prev_box_idx
+                            should_continue = False
+
+                            # Força reprocessar aquela anotação
+                            break
+                        else:
+                            print("⚠️  Não há anotações anteriores para voltar")
+                            continue
 
                     if date_input.lower() == 'skip':
                         print("⏭️  Pulando...")
+                        box_idx += 1
+                        should_continue = False
                         break
 
                     if date_input.lower() == 'ilegivel':
@@ -132,8 +156,11 @@ def main():
                             crop_id, image_path.name, subset,
                             box_idx, box
                         )
-                        annotation_history.append(crop_id)
+                        annotation_history.append(
+                            (idx, img_info, box_idx, box))
                         print("✓ Marcado como ilegível")
+                        box_idx += 1
+                        should_continue = False
                         break
 
                     # Valida e normaliza data
@@ -146,12 +173,25 @@ def main():
                                 crop_id, image_path.name, subset,
                                 box_idx, box, normalized, date_input
                             )
-                            annotation_history.append(crop_id)
+                            annotation_history.append(
+                                (idx, img_info, box_idx, box))
                             print(f"✓ Salvo como: {normalized}")
+                            box_idx += 1
+                            should_continue = False
                             break
                         else:
                             print(
                                 "❌ Formato inválido! Use: DD/MM/YYYY, DDMMYYYY ou DDMMYY")
+                    else:
+                        print("❌ Digite uma data ou comando válido")
+
+                # Se deu back, não avança o box_idx
+                if date_input.lower() == 'back' and annotation_history:
+                    break
+
+            # Só avança para próxima imagem se não deu back
+            if not (date_input.lower() == 'back' and annotation_history):
+                idx += 1
 
     finally:
         display.stop()

@@ -32,6 +32,8 @@ class TerminalUI:
         print("INSTRUÇÕES:")
         print("- ZOOM: [ Q ] aumentar | [ E ] diminuir | [ R ] resetar")
         print("- MOVER: [ W ] cima | [ S ] baixo | [ A ] esq | [ D ] dir")
+        print("- BRILHO: [ B ] aumentar | [ V ] diminuir")
+        print("- CONTRASTE: [ C ] aumentar | [ X ] diminuir")
         print("- Digite a data: 01/02/2025 ou 01022025 ou 010225")
         print("  (será salva como: 2025-02-01)")
         print("- 'skip' = pular | 'quit' = sair | 'ilegivel' = não consigo ler")

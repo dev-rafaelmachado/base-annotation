@@ -28,6 +28,10 @@ class DisplayConfig:
     min_width: int = 400
     min_height: int = 300
     auto_zoom_coverage: float = 0.6  # Região ocupa 60% da tela
+    brightness_step: float = 10.0  # Incremento de brilho
+    contrast_step: float = 0.1  # Incremento de contraste
+    default_brightness: float = 0.0  # Brilho padrão
+    default_contrast: float = 1.0  # Contraste padrão
 
 
 @dataclass
@@ -46,7 +50,7 @@ class AnnotationConfig:
     polygon_alpha: float = 0.15  # Transparência do preenchimento
     border_color: Tuple[int, int, int] = (0, 255, 0)  # Verde BGR
     fill_color: Tuple[int, int, int] = (0, 255, 255)  # Amarelo BGR
-    border_thickness: int = 2
+    border_thickness: int = 1  # Reduzido de 2 para 1
 
 
 class Config:
