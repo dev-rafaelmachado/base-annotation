@@ -14,10 +14,12 @@ class AnnotationManager:
     def __init__(self, paths: PathConfig):
         self.paths = paths
         self.annotations: Dict[str, Annotation] = {}
-        self._load_existing()
+        # NÃO carrega no init - será carregado sob demanda
+        # self._load_existing()
 
     def _load_existing(self):
         """Carrega anotações existentes do JSON"""
+        self.annotations.clear()  # Limpa antes de carregar
         if self.paths.annotations_file.exists():
             with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -26,7 +28,10 @@ class AnnotationManager:
                         crop_id, ann_data)
 
     def is_annotated(self, crop_id: str) -> bool:
-        """Verifica se crop já foi anotado"""
+        """Verifica se crop já foi anotado (consulta JSON se necessário)"""
+        # Se não está em memória, carrega do JSON
+        if not self.annotations and self.paths.annotations_file.exists():
+            self._load_existing()
         return crop_id in self.annotations
 
     def add_annotation(
@@ -111,13 +116,25 @@ class AnnotationManager:
 
     def save(self):
         """Salva todas as anotações"""
-        data = {
-            crop_id: ann.to_dict()
-            for crop_id, ann in self.annotations.items()
-        }
+        # Antes de salvar, carrega o que já existe para não perder nada
+        existing_annotations = {}
+        if self.paths.annotations_file.exists():
+            try:
+                with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                    # Carrega anotações existentes
+                    for crop_id, ann_data in existing_data.items():
+                        existing_annotations[crop_id] = ann_data
+            except (json.JSONDecodeError, IOError):
+                pass
 
+        # Atualiza com as anotações em memória (converte para dict)
+        for crop_id, ann in self.annotations.items():
+            existing_annotations[crop_id] = ann.to_dict()
+
+        # Salva tudo
         with open(self.paths.annotations_file, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(existing_annotations, f, indent=2, ensure_ascii=False)
 
         print(f"\n✓ Anotações salvas: {self.paths.annotations_file}")
 

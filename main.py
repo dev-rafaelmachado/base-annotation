@@ -34,6 +34,9 @@ def main():
         print("❌ Nenhuma imagem encontrada")
         return
 
+    # Carrega anotações existentes do JSON para verificação
+    manager._load_existing()
+
     # Informações iniciais - conta do JSON (sempre atualizado)
     terminal.clear()
 
