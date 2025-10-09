@@ -34,11 +34,15 @@ def main():
         print("❌ Nenhuma imagem encontrada")
         return
 
-    # Informações iniciais - conta do JSON
+    # Informações iniciais - conta do JSON (sempre atualizado)
     terminal.clear()
+
+    # Recarrega contagem do JSON para garantir valor correto
+    annotation_count = manager.get_annotation_count()
+
     terminal.print_header(
         total_images=len(image_paths),
-        already_annotated=manager.get_annotation_count(),
+        already_annotated=annotation_count,
         start_from=0,
         class_names=loader.class_names
     )

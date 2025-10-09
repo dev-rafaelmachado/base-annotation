@@ -122,8 +122,16 @@ class AnnotationManager:
         print(f"\n✓ Anotações salvas: {self.paths.annotations_file}")
 
     def get_annotation_count(self) -> int:
-        """Retorna contagem de anotações do JSON"""
-        return len(self.annotations)
+        """Retorna contagem de anotações do JSON (sempre atualizado)"""
+        # Recarrega do JSON para garantir contagem correta
+        if self.paths.annotations_file.exists():
+            try:
+                with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    return len(data)
+            except (json.JSONDecodeError, IOError):
+                pass
+        return 0
 
     def export_summary(self, force_rebuild: bool = False):
         """

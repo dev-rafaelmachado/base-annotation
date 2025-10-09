@@ -21,7 +21,7 @@ class TerminalUI:
     ):
         """Imprime cabeçalho inicial"""
         print(f"\n📊 Total de imagens: {total_images}")
-        print(f"✅ Já anotadas (do JSON): {already_annotated} anotações")
+        print(f"✅ Anotações existentes (JSON): {already_annotated}")
         print(f"🚀 Iniciando a partir da imagem {start_from}")
         print(f"📋 Classes: {class_names}")
         self.print_instructions()
