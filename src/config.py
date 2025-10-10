@@ -32,6 +32,7 @@ class DisplayConfig:
     contrast_step: float = 0.1  # Incremento de contraste
     default_brightness: float = 0.0  # Brilho padrão
     default_contrast: float = 1.0  # Contraste padrão
+    delay: float = 2.0  # Pausa entre cada anotação
 
 
 @dataclass

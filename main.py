@@ -7,6 +7,7 @@ from src.core import DatasetLoader, ImageProcessor, AnnotationManager
 from src.config import Config
 import sys
 from pathlib import Path
+import time
 
 # Adiciona src ao path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -199,6 +200,7 @@ def main():
                             print(f"✓ Salvo como: {normalized}")
                             box_idx += 1
                             should_continue = False
+                            time.sleep(config.display.delay)
                             break
                         else:
                             print(
