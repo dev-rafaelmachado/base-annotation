@@ -1,4 +1,5 @@
 /rf_export
 __pycache__
 *.pyc
-/annotations_output/*
+/annotations_output/all_images
+/annotations_output/crops
