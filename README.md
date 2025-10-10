@@ -63,6 +63,31 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 | `C` | Aumentar contraste |
 | `X` | Diminuir contraste |
 
+### Comandos de Anotação (terminal)
+| Comando | Ação |
+|---------|------|
+| `01/02/2025` | Data completa: DD/MM/YYYY |
+| `01022025` | Data completa: DDMMYYYY |
+| `010225` | Data completa: DDMMYY |
+| `03/2026` | Sem dia: MM/YYYY (assume dia 01) |
+| `032026` | Sem dia: MMYYYY (assume dia 01) |
+| `0326` | Sem dia: MMYY (assume dia 01) |
+| `ilegivel` | Marca como não legível |
+| `skip` | Pula esta anotação |
+| `back` | Desfaz a última anotação |
+| `quit` | Salva e encerra |
+
+## Formatos de Data
+
+| Entrada | Interpretação | Salvo como |
+|---------|---------------|------------|
+| 01/02/2025 | 01 de fevereiro de 2025 | 2025-02-01 |
+| 01022025 | 01 de fevereiro de 2025 | 2025-02-01 |
+| 010225 | 01 de fevereiro de 2025 | 2025-02-01 |
+| **03/2026** | **01 de março de 2026** | **2026-03-01** |
+| **032026** | **01 de março de 2026** | **2026-03-01** |
+| **0326** | **01 de março de 2026** | **2026-03-01** |
+
 ## Dicas
 
 ✅ **Zoom automático** - A região já aparece ampliada e centralizada  
