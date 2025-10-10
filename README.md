@@ -32,6 +32,8 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 - ✅ **R** - Reseta zoom, pan, brilho e contraste
 - ✅ **B/V** - Aumentar/diminuir brilho
 - ✅ **C/X** - Aumentar/diminuir contraste
+- ✅ **N/M** - Rotacionar imagem 10° (N=anti-horário, M=horário)
+- ✅ **T** - Resetar rotação
 
 ### Suporte a Polígonos
 - ✅ Detecta automaticamente polígonos e bboxes
@@ -62,6 +64,9 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 | `V` | Diminuir brilho |
 | `C` | Aumentar contraste |
 | `X` | Diminuir contraste |
+| **`N`** | **Rotacionar 10° anti-horário (←)** |
+| **`M`** | **Rotacionar 10° horário (→)** |
+| **`T`** | **Resetar rotação para 0°** |
 
 ### Comandos de Anotação (terminal)
 | Comando | Ação |
@@ -69,9 +74,9 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 | `01/02/2025` | Data completa: DD/MM/YYYY |
 | `01022025` | Data completa: DDMMYYYY |
 | `010225` | Data completa: DDMMYY |
-| `03/2026` | Sem dia: MM/YYYY (assume dia 01) |
-| `032026` | Sem dia: MMYYYY (assume dia 01) |
-| `0326` | Sem dia: MMYY (assume dia 01) |
+| `02/2025` | Sem dia: MM/YYYY (assume **último dia do mês**) |
+| `022025` | Sem dia: MMYYYY (assume **último dia do mês**) |
+| `0225` | Sem dia: MMYY (assume **último dia do mês**) |
 | `ilegivel` | Marca como não legível |
 | `skip` | Pula esta anotação |
 | `back` | Desfaz a última anotação |
@@ -84,16 +89,28 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 | 01/02/2025 | 01 de fevereiro de 2025 | 2025-02-01 |
 | 01022025 | 01 de fevereiro de 2025 | 2025-02-01 |
 | 010225 | 01 de fevereiro de 2025 | 2025-02-01 |
-| **03/2026** | **01 de março de 2026** | **2026-03-01** |
-| **032026** | **01 de março de 2026** | **2026-03-01** |
-| **0326** | **01 de março de 2026** | **2026-03-01** |
+| **02/2025** | **28 de fevereiro de 2025** | **2025-02-28** |
+| **022025** | **28 de fevereiro de 2025** | **2025-02-28** |
+| **0225** | **28 de fevereiro de 2025** | **2025-02-28** |
+| **02/2024** | **29 de fevereiro de 2024** *(bissexto)* | **2024-02-29** |
+| **01/2025** | **31 de janeiro de 2025** | **2025-01-31** |
+| **04/2025** | **30 de abril de 2025** | **2025-04-30** |
+
+### 📅 Regras de Último Dia do Mês
+
+Quando o dia não é fornecido, o sistema calcula automaticamente o último dia:
+- **Janeiro, Março, Maio, Julho, Agosto, Outubro, Dezembro**: dia 31
+- **Abril, Junho, Setembro, Novembro**: dia 30
+- **Fevereiro**: dia 28 (ou 29 em anos bissextos)
 
 ## Dicas
 
 ✅ **Zoom automático** - A região já aparece ampliada e centralizada  
 ✅ **Ajuste fino** - Use Q/E e WASD se precisar ver mais detalhes  
 ✅ **Ajuste de imagem** - Use B/V e C/X para melhorar visibilidade  
+✅ **Rotação da imagem** - Use N/M para girar em incrementos de 10°  
 ✅ **R para resetar** - Volta ao zoom automático e configurações padrão  
+✅ **T para rotação** - Volta a rotação para 0°  
 ✅ **Mais rápido** - Não precisa dar zoom manualmente em cada imagem  
 ✅ **Foco no que importa** - A data já está em destaque  
 
