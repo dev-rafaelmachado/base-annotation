@@ -1,21 +1,26 @@
 """
-Gerenciamento de anotações
+Gerenciamento de anotações com suporte a múltiplos usuários
 """
 import json
+import shutil
 from pathlib import Path
+import time
 from typing import Dict, Any
+from datetime import datetime
 from ..models import Annotation, AnnotationStatus
 from ..config import PathConfig
+from ..utils import FileLock
 
 
 class AnnotationManager:
-    """Gerencia anotações de datas de validade"""
+    """Gerencia anotações de datas de validade com segurança para múltiplos usuários"""
 
     def __init__(self, paths: PathConfig):
         self.paths = paths
         self.annotations: Dict[str, Annotation] = {}
-        # NÃO carrega no init - será carregado sob demanda
-        # self._load_existing()
+        self.lock_file = paths.output_path / ".annotations.lock"
+        self.backup_dir = paths.output_path / "backups"
+        self.backup_dir.mkdir(exist_ok=True)
 
     def _load_existing(self):
         """Carrega anotações existentes do JSON"""
@@ -114,29 +119,114 @@ class AnnotationManager:
         if len(self.annotations) % 5 == 0:
             self.save()
 
-    def save(self):
-        """Salva todas as anotações"""
-        # Antes de salvar, carrega o que já existe para não perder nada
-        existing_annotations = {}
+    def _create_backup(self):
+        """Cria backup do arquivo JSON antes de salvar"""
         if self.paths.annotations_file.exists():
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_file = self.backup_dir / f"expiry_dates_{timestamp}.json"
+            shutil.copy2(self.paths.annotations_file, backup_file)
+
+            # Mantém apenas últimos 10 backups
+            backups = sorted(self.backup_dir.glob("expiry_dates_*.json"))
+            if len(backups) > 10:
+                for old_backup in backups[:-10]:
+                    old_backup.unlink()
+
+    def save(self, max_retries: int = 3):
+        """
+        Salva todas as anotações com lock de arquivo
+
+        Args:
+            max_retries: Número máximo de tentativas
+        """
+        for attempt in range(max_retries):
             try:
-                with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
-                    existing_data = json.load(f)
-                    # Carrega anotações existentes
-                    for crop_id, ann_data in existing_data.items():
-                        existing_annotations[crop_id] = ann_data
-            except (json.JSONDecodeError, IOError):
-                pass
+                # Tenta adquirir lock
+                with FileLock(self.lock_file, timeout=10):
+                    # Cria backup antes de salvar
+                    self._create_backup()
 
-        # Atualiza com as anotações em memória (converte para dict)
-        for crop_id, ann in self.annotations.items():
-            existing_annotations[crop_id] = ann.to_dict()
+                    # Carrega dados existentes
+                    existing_annotations = {}
+                    if self.paths.annotations_file.exists():
+                        try:
+                            with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
+                                existing_data = json.load(f)
+                                for crop_id, ann_data in existing_data.items():
+                                    existing_annotations[crop_id] = ann_data
+                        except (json.JSONDecodeError, IOError) as e:
+                            print(f"⚠️  Erro ao ler JSON existente: {e}")
 
-        # Salva tudo
-        with open(self.paths.annotations_file, 'w', encoding='utf-8') as f:
-            json.dump(existing_annotations, f, indent=2, ensure_ascii=False)
+                    # Mescla com anotações em memória
+                    for crop_id, ann in self.annotations.items():
+                        existing_annotations[crop_id] = ann.to_dict()
 
-        print(f"\n✓ Anotações salvas: {self.paths.annotations_file}")
+                    # Salva atomicamente (escreve em temp, depois move)
+                    temp_file = self.paths.annotations_file.with_suffix('.tmp')
+                    with open(temp_file, 'w', encoding='utf-8') as f:
+                        json.dump(existing_annotations, f,
+                                  indent=2, ensure_ascii=False)
+
+                    # Move atomicamente
+                    temp_file.replace(self.paths.annotations_file)
+
+                    print(
+                        f"\n✓ Anotações salvas: {self.paths.annotations_file}")
+                    return
+
+            except TimeoutError:
+                if attempt < max_retries - 1:
+                    print(
+                        f"⏳ Aguardando outros usuários... (tentativa {attempt + 1}/{max_retries})")
+                    time.sleep(1)
+                else:
+                    print(
+                        "❌ Não foi possível salvar - outro usuário está usando o arquivo")
+                    print(
+                        "💡 Suas anotações estão em memória. Tente novamente em instantes.")
+            except Exception as e:
+                print(f"❌ Erro ao salvar: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(1)
+
+    def validate_json_integrity(self) -> bool:
+        """Valida integridade do arquivo JSON"""
+        if not self.paths.annotations_file.exists():
+            return True
+
+        try:
+            with open(self.paths.annotations_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+                # Valida estrutura básica
+                if not isinstance(data, dict):
+                    return False
+
+                # Valida cada anotação
+                for crop_id, ann_data in data.items():
+                    required_fields = [
+                        'image', 'subset', 'class_name', 'status']
+                    if not all(field in ann_data for field in required_fields):
+                        return False
+
+                return True
+        except Exception as e:
+            print(f"⚠️  Erro na validação: {e}")
+            return False
+
+    def restore_from_backup(self):
+        """Restaura do backup mais recente"""
+        backups = sorted(self.backup_dir.glob(
+            "expiry_dates_*.json"), reverse=True)
+
+        if backups:
+            latest_backup = backups[0]
+            print(f"🔄 Restaurando do backup: {latest_backup.name}")
+            shutil.copy2(latest_backup, self.paths.annotations_file)
+            self._load_existing()
+            return True
+
+        return False
 
     def get_annotation_count(self) -> int:
         """Retorna contagem de anotações do JSON (sempre atualizado)"""

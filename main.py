@@ -37,6 +37,17 @@ def main():
     # Carrega anotações existentes do JSON para verificação
     manager._load_existing()
 
+    # Valida integridade do JSON
+    if not manager.validate_json_integrity():
+        print("⚠️  JSON corrompido detectado!")
+        response = input("Deseja restaurar do backup? (s/n): ")
+        if response.lower() == 's':
+            if manager.restore_from_backup():
+                print("✅ Backup restaurado com sucesso!")
+            else:
+                print("❌ Nenhum backup disponível")
+                return
+
     # Informações iniciais - conta do JSON (sempre atualizado)
     terminal.clear()
 

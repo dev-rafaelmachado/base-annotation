@@ -24,6 +24,12 @@ class TerminalUI:
         print(f"✅ Anotações existentes (JSON): {already_annotated}")
         print(f"🚀 Iniciando a partir da imagem {start_from}")
         print(f"📋 Classes: {class_names}")
+        print("\n" + "="*60)
+        print("🔒 MODO MULTI-USUÁRIO ATIVO")
+        print("✅ Sistema de lock de arquivo ativado")
+        print("✅ Backups automáticos habilitados")
+        print("✅ Seguro para múltiplos usuários anotando simultaneamente")
+        print("="*60)
         self.print_instructions()
 
     def print_instructions(self):

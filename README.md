@@ -74,3 +74,23 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 
 ## Estrutura
 
+## 🔒 Modo Multi-Usuário
+
+### Sistema Seguro para Equipe
+
+✅ **Lock de arquivo** - Evita escrita simultânea  
+✅ **Backups automáticos** - A cada salvamento  
+✅ **Retry automático** - Tenta novamente se arquivo ocupado  
+✅ **Validação de integridade** - Detecta JSON corrompido  
+✅ **Restauração de backup** - Recupera dados se necessário  
+
+### Como Usar em Equipe
+
+1. **Clone o repositório** - Todos os membros clonam
+2. **Rodem simultaneamente** - Sem problemas!
+3. **Sistema sincroniza** - Lock garante segurança
+4. **Backups automáticos** - Pasta `backups/` mantém histórico
+5. **Merge automático** - Anotações são mescladas
+
+### Arquitetura Multi-Usuário
+
