@@ -68,4 +68,5 @@ class TerminalUI:
         print(f"📦 Anotação {box_idx+1}/{total_boxes} - Classe: {class_name}")
         print(f"📐 Tipo: {box_type}")
         print(f"🔍 Zoom automático: {zoom:.1f}x")
-        print(f"💾 Salvo: {crop_name}\n")
+        print(f"💾 Salvo: {crop_name}")
+        print(f"ℹ️  Imagens grandes são redimensionadas automaticamente\n")

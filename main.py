@@ -86,6 +86,18 @@ def main():
 
             img_height, img_width = image.shape[:2]
 
+            # Pré-redimensiona imagens muito grandes para economizar memória
+            max_source = config.display.max_source_width
+            if img_width > max_source or img_height > max_source:
+                scale = min(max_source / img_width, max_source / img_height)
+                new_w = int(img_width * scale)
+                new_h = int(img_height * scale)
+                print(
+                    f"🔄 Redimensionando {img_width}x{img_height} → {new_w}x{new_h}")
+                image = cv2.resize(image, (new_w, new_h),
+                                   interpolation=cv2.INTER_AREA)
+                img_height, img_width = image.shape[:2]
+
             # Lê anotações
             boxes = loader.read_yolo_label(label_path)
             if not boxes:

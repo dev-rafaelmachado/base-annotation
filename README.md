@@ -18,6 +18,7 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 - ✅ **Zoom ideal** - Aplica zoom para que a região ocupe ~60% da tela
 - ✅ **Centralização automática** - Posiciona a câmera no centro da região
 - ✅ **Ajuste manual** - Você ainda pode usar Q/E/WASD para ajustar
+- ✅ **Suporte 4K/8K** - Redimensiona inteligentemente imagens de alta resolução
 
 ### Visualização Aprimorada
 - ✅ **Terminal limpo** - Limpa a cada nova imagem
@@ -25,6 +26,8 @@ As anotações (polígonos ou bboxes) já estão no Roboflow. Este script:
 - ✅ **Polígonos destacados** - Preenchimento amarelo transparente
 - ✅ **Bordas verdes** - Fácil identificação
 - ✅ **Atualização em tempo real** - Thread separada
+- ✅ **Qualquer resolução** - Suporta de 640x480 até 4K (3840x2160) e além
+- ✅ **Interpolação inteligente** - Mantém qualidade ao redimensionar
 
 ### Controles Estilo Gamer
 - ✅ **Q/E** - Zoom in/out (ajuste fino após zoom automático)
@@ -111,10 +114,29 @@ Quando o dia não é fornecido, o sistema calcula automaticamente o último dia:
 ✅ **Rotação da imagem** - Use N/M para girar em incrementos de 10°  
 ✅ **R para resetar** - Volta ao zoom automático e configurações padrão  
 ✅ **T para rotação** - Volta a rotação para 0°  
+✅ **Imagens 4K** - Sistema redimensiona automaticamente mantendo qualidade  
+✅ **Proporção mantida** - Imagens nunca ficam distorcidas  
 ✅ **Mais rápido** - Não precisa dar zoom manualmente em cada imagem  
 ✅ **Foco no que importa** - A data já está em destaque  
 
-## Estrutura
+## 📐 Suporte a Resoluções
+
+O sistema suporta imagens de qualquer tamanho:
+
+| Resolução | Exemplo | Comportamento |
+|-----------|---------|---------------|
+| SD | 640x480 | Exibida próxima ao tamanho original |
+| HD | 1280x720 | Redimensionada para caber na tela |
+| Full HD | 1920x1080 | Redimensionada mantendo qualidade |
+| 2K | 2560x1440 | Redução inteligente (até 40%) |
+| 4K | 3840x2160 | Redução inteligente (até 25%) |
+| 8K+ | 7680x4320+ | Redução agressiva mantendo legibilidade |
+
+### Algoritmos de Interpolação
+
+- **INTER_CUBIC** - Para aumentar imagens pequenas (suavização)
+- **INTER_AREA** - Para reduzir até 50% (máxima qualidade)
+- **INTER_LINEAR** - Para reduções maiores (balanço qualidade/performance)
 
 ## 🔒 Modo Multi-Usuário
 

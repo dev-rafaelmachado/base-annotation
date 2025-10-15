@@ -64,22 +64,44 @@ class DisplayManager:
         self.should_update = True
 
     def get_display_size(self, img_width: int, img_height: int) -> Tuple[int, int]:
-        """Calcula tamanho de display para uma imagem"""
+        """
+        Calcula tamanho de display para uma imagem com redimensionamento inteligente
+        Suporta imagens de qualquer tamanho incluindo 4K/8K
+        """
+        # Primeiro redimensiona imagens muito grandes para tamanho gerenciável
+        if img_width > self.display_config.max_source_width or img_height > self.display_config.max_source_height:
+            source_scale = min(
+                self.display_config.max_source_width / img_width,
+                self.display_config.max_source_height / img_height
+            )
+            img_width = int(img_width * source_scale)
+            img_height = int(img_height * source_scale)
+
+        # Agora calcula escala para caber na tela
         scale = min(
             self.display_config.max_width / img_width,
-            self.display_config.max_height / img_height,
-            1.0
+            self.display_config.max_height / img_height
         )
 
-        if scale < 0.5:
+        # Garante que sempre redimensiona imagens grandes
+        if scale > 1.0:
             scale = 1.0
+
+        # Para imagens muito pequenas, aumenta
         if img_width < self.display_config.min_width or img_height < self.display_config.min_height:
             scale = max(
                 self.display_config.min_width / img_width,
                 self.display_config.min_height / img_height
             )
 
-        return int(img_width * scale), int(img_height * scale)
+        final_width = int(img_width * scale)
+        final_height = int(img_height * scale)
+
+        # Garante que não ultrapassa limites da tela
+        final_width = min(final_width, self.display_config.max_width)
+        final_height = min(final_height, self.display_config.max_height)
+
+        return final_width, final_height
 
     def _display_loop(self):
         """Loop principal de visualização"""
@@ -98,11 +120,24 @@ class DisplayManager:
         """Renderiza imagem com zoom e pan"""
         h, w = self.current_image.shape[:2]
 
-        # Redimensiona para display
+        # Redimensiona para display com interpolação apropriada
         display_w, display_h = self.get_display_size(w, h)
+
+        # Escolhe interpolação baseado na escala
+        scale = display_w / w
+        if scale > 1.0:
+            # Aumentando - usa CUBIC para suavizar
+            interpolation = cv2.INTER_CUBIC
+        elif scale > 0.5:
+            # Reduzindo até 50% - usa AREA para melhor qualidade
+            interpolation = cv2.INTER_AREA
+        else:
+            # Reduzindo mais de 50% - usa LINEAR para performance
+            interpolation = cv2.INTER_LINEAR
+
         base_image = cv2.resize(
             self.current_image, (display_w, display_h),
-            interpolation=cv2.INTER_CUBIC if display_w > w else cv2.INTER_AREA
+            interpolation=interpolation
         )
 
         # Aplica rotação

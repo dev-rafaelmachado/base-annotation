@@ -1,14 +1,14 @@
 RESUMO DAS ANOTAÇÕES DE DATAS
 ==================================================
-Total de anotações: 149
-Com data legível: 141
-Ilegíveis: 8
+Total de anotações: 36
+Com data legível: 36
+Ilegíveis: 0
 
 Por subset:
-  - train: 149
+  - train: 36
 
 Por classe:
-  - exp_date: 149
+  - exp_date: 36
 
 Arquivo JSON: annotations_output\expiry_dates_all.json
 Crops salvos em: annotations_output\crops

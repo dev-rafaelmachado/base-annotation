@@ -1060,31 +1060,5 @@
     "expiry_date_raw": "210326",
     "status": "anotado",
     "timestamp": "2025-10-14T23:29:58.620023"
-  },
-  "train_134_jpg.rf.7b1731171d4a4b0a8fd1feca6ac1e988_box0": {
-    "image": "134_jpg.rf.7b1731171d4a4b0a8fd1feca6ac1e988.jpg",
-    "subset": "train",
-    "box_index": 0,
-    "class_id": 0,
-    "class_name": "exp_date",
-    "annotation": {
-      "type": "polygon",
-      "coords": [
-        0.45201124338624343,
-        0.7537080853174604,
-        0.4747189153439153,
-        0.6655081845238096,
-        0.38202744708994707,
-        0.6491904761904762,
-        0.35299140211640206,
-        0.736124007936508,
-        0.45201124338624343,
-        0.7537080853174604
-      ]
-    },
-    "expiry_date": "2025-07-21",
-    "expiry_date_raw": "21072025",
-    "status": "anotado",
-    "timestamp": "2025-10-14T23:30:25.683507"
   }
 }
