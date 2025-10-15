@@ -24,6 +24,9 @@ class DisplayManager:
         self.brightness = display_config.default_brightness
         self.contrast = display_config.default_contrast
 
+        # Controle de rotação
+        self.rotation = display_config.default_rotation
+
         self.current_image: Optional[np.ndarray] = None
         self.should_update = False
         self.stop_flag = False
@@ -54,9 +57,10 @@ class DisplayManager:
         self.zoom_level = zoom
         self.pan_x = pan_x
         self.pan_y = pan_y
-        # Reseta brilho e contraste ao mudar de imagem
+        # Reseta brilho, contraste e rotação ao mudar de imagem
         self.brightness = self.display_config.default_brightness
         self.contrast = self.display_config.default_contrast
+        self.rotation = self.display_config.default_rotation
         self.should_update = True
 
     def get_display_size(self, img_width: int, img_height: int) -> Tuple[int, int]:
@@ -100,6 +104,9 @@ class DisplayManager:
             self.current_image, (display_w, display_h),
             interpolation=cv2.INTER_CUBIC if display_w > w else cv2.INTER_AREA
         )
+
+        # Aplica rotação
+        base_image = self._apply_rotation(base_image)
 
         # Aplica brilho e contraste
         base_image = self._apply_brightness_contrast(base_image)
@@ -152,6 +159,38 @@ class DisplayManager:
             image, alpha=self.contrast, beta=self.brightness)
         return adjusted
 
+    def _apply_rotation(self, image: np.ndarray) -> np.ndarray:
+        """Aplica rotação na imagem"""
+        if self.rotation == 0:
+            return image
+
+        h, w = image.shape[:2]
+        center = (w // 2, h // 2)
+
+        # Matriz de rotação
+        matrix = cv2.getRotationMatrix2D(center, self.rotation, 1.0)
+
+        # Calcula novos limites da imagem rotacionada
+        cos = abs(matrix[0, 0])
+        sin = abs(matrix[0, 1])
+
+        new_w = int((h * sin) + (w * cos))
+        new_h = int((h * cos) + (w * sin))
+
+        # Ajusta a matriz de translação
+        matrix[0, 2] += (new_w / 2) - center[0]
+        matrix[1, 2] += (new_h / 2) - center[1]
+
+        # Aplica rotação
+        rotated = cv2.warpAffine(
+            image, matrix, (new_w, new_h),
+            flags=cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=(0, 0, 0)
+        )
+
+        return rotated
+
     def _draw_instructions(self, image: np.ndarray):
         """Desenha instruções na imagem"""
         instructions = [
@@ -159,12 +198,13 @@ class DisplayManager:
             "MOVE: [ W ] [ S ] [ A ] [ D ]",
             f"BRILHO: [ B ] + | [ V ] - | Atual: {self.brightness:+.0f}",
             f"CONTRASTE: [ C ] + | [ X ] - | Atual: {self.contrast:.2f}",
+            f"ROTACAO: [ N ] ← | [ M ] → | [ T ] reset | Atual: {self.rotation:.0f}°",
             f"Zoom: {self.zoom_level:.1f}x"
         ]
 
         h = image.shape[0]
         for i, text in enumerate(instructions):
-            y_pos = h - 100 + i * 20
+            y_pos = h - 120 + i * 20
             cv2.putText(
                 image, text, (10, y_pos),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1, cv2.LINE_AA
@@ -189,6 +229,7 @@ class DisplayManager:
             self.pan_y = 0
             self.brightness = self.display_config.default_brightness
             self.contrast = self.display_config.default_contrast
+            # Não reseta rotação aqui - tem tecla T específica
             changed = True
 
         # Pan
@@ -223,6 +264,19 @@ class DisplayManager:
         elif key in [ord('x'), ord('X')]:
             self.contrast = max(
                 self.contrast - self.display_config.contrast_step, 0.1)
+            changed = True
+
+        # Rotação
+        elif key in [ord('n'), ord('N')]:  # Rotaciona para esquerda (sentido anti-horário)
+            self.rotation = (
+                self.rotation + self.display_config.rotation_step) % 360
+            changed = True
+        elif key in [ord('m'), ord('M')]:  # Rotaciona para direita (sentido horário)
+            self.rotation = (
+                self.rotation - self.display_config.rotation_step) % 360
+            changed = True
+        elif key in [ord('t'), ord('T')]:  # Reset rotação
+            self.rotation = self.display_config.default_rotation
             changed = True
 
         if changed:

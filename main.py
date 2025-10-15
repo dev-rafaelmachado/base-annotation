@@ -7,6 +7,7 @@ from src.core import DatasetLoader, ImageProcessor, AnnotationManager
 from src.config import Config
 import sys
 from pathlib import Path
+import time
 
 # Adiciona src ao path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -33,6 +34,20 @@ def main():
     if not image_paths:
         print("❌ Nenhuma imagem encontrada")
         return
+
+    # Carrega anotações existentes do JSON para verificação
+    manager._load_existing()
+
+    # Valida integridade do JSON
+    if not manager.validate_json_integrity():
+        print("⚠️  JSON corrompido detectado!")
+        response = input("Deseja restaurar do backup? (s/n): ")
+        if response.lower() == 's':
+            if manager.restore_from_backup():
+                print("✅ Backup restaurado com sucesso!")
+            else:
+                print("❌ Nenhum backup disponível")
+                return
 
     # Informações iniciais - conta do JSON (sempre atualizado)
     terminal.clear()
@@ -185,6 +200,7 @@ def main():
                             print(f"✓ Salvo como: {normalized}")
                             box_idx += 1
                             should_continue = False
+                            time.sleep(config.display.delay)
                             break
                         else:
                             print(
