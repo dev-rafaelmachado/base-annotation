@@ -23,10 +23,10 @@ class PathConfig:
 @dataclass
 class DisplayConfig:
     """Configurações de visualização"""
-    max_width: int = 1200
-    max_height: int = 800
-    min_width: int = 400
-    min_height: int = 300
+    max_width: int = 1920  # Aumentado para Full HD
+    max_height: int = 1080  # Aumentado para Full HD
+    min_width: int = 640
+    min_height: int = 480
     auto_zoom_coverage: float = 0.6  # Região ocupa 60% da tela
     brightness_step: float = 10.0  # Incremento de brilho
     contrast_step: float = 0.1  # Incremento de contraste
@@ -35,6 +35,9 @@ class DisplayConfig:
     rotation_step: float = 10.0  # Incremento de rotação em graus
     default_rotation: float = 0.0  # Rotação padrão
     delay: float = 2.0  # Pausa entre cada anotação
+    # Limites para imagens muito grandes
+    max_source_width: int = 4096  # Limite para imagem de origem
+    max_source_height: int = 4096
 
 
 @dataclass
